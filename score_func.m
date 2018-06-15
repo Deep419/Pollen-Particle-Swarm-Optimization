@@ -1,15 +1,16 @@
 function s = score_func(r, c, gt, params)
 
+warning off
 img = zeros(r,c,'uint8');
-
-params = reshape(params,[16 4]);
+numBoxes = numel(params)/4;
+params = reshape(params,[numBoxes 4]);
 
 scores = zeros(1,5);
 s = 0;
 
 % if ~any(params(:)<1)
 
-% color = jet(16);
+% color = jet(numBoxes);
 % I = insertShape(img,'rectangle',params(:,:),'color',color*255,'LineWidth',10);
 % imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
 

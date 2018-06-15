@@ -1,8 +1,11 @@
+function s = pso_test(var)
+var = round(var);
 dummyData = 0;
-numBoxes = 16;
-
+numBoxes = var;
+warning off
 gpuLimit = 1000;
 masterPath = fullfile('D:','Deep','repos','master_scripts');
+masterPath = fullfile('D:','research','pollen','repos','master_scripts');
 load([masterPath filesep fullfile('big_image','GT_data.mat')]);
 img = imread([masterPath filesep fullfile('big_image','Achillea_millefolium_c_1.tif')]);
 gt = GT_data.bbox{1,1};
@@ -23,15 +26,17 @@ options = optimoptions('particleswarm','Display', 'iter', ...
 
 params = [repelem(1,numBoxes*2) repelem(gpuLimit,numBoxes*2)];
 
-tic
+% tic
 
 func = @(params) score_func(r, c, gt, params);
 
 % figure;
 optParams = particleswarm(func, nvars, lb , ub, options);
-toc
+% toc
 optParams = reshape(optParams,[numBoxes 4]);
-
-color = jet(numBoxes);
-I = insertShape(img,'rectangle',optParams,'color',color*255,'LineWidth',10);
-figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
+s = score_func(r, c, gt, optParams);
+printf('\nScore of %.4f with %d variables',s,var);
+% color = jet(numBoxes);
+% I = insertShape(img,'rectangle',optParams,'color',color*255,'LineWidth',10);
+% figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
+end
