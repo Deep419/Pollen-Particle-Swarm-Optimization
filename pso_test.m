@@ -11,6 +11,7 @@ img = imread([masterPath filesep fullfile('big_image','Achillea_millefolium_c_1.
 gt = GT_data.bbox{1,1};
 
 if dummyData
+    numBoxes = 4;
     img = zeros(500,500,'uint8');
     gpuLimit = 200;
     gt = [20 40 50 60; 300 100 100 75; 10 300 80 110];
