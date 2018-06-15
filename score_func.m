@@ -2,7 +2,7 @@
 function s = score_func(r,c, gt, params)
 % gt = [20 40 50 60; 300 100 100 75; 10 300 80 110];
 img = zeros(r,c,'uint8');
-params = reshape(params,[10 4]);
+params = reshape(params,[16 4]);
 params;
 % params = randi(500,4);
 % params(:,[1 2]) = round(params(:,[1 2])/2);
@@ -27,9 +27,9 @@ s = 0;
 %             flag = false;
 %         end
 %     end
-
-I = insertShape(img,'rectangle',params(:,:),'color','yellow','LineWidth',10);
-imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
+% color = jet(16);
+% I = insertShape(img,'rectangle',params(:,:),'color',color*255,'LineWidth',10);
+% imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
 
 %0 Make sure params boxes are inside image
 iou_score = bboxOverlapRatio([1 1 size(img,1) size(img,2)],params,'min');
@@ -87,7 +87,7 @@ scores(4) = 0;
 %4 Maximize Box Size : range [0 1]
 
 scores(5) = 0;
-s = (.25 * scores(1)) + (.25 * scores(2)) + (.5* scores(3));
+s = (0.25 * scores(1)) + (.25 * scores(2)) + (.5* scores(3));
 end
 
 
