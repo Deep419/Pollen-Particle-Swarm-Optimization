@@ -1,51 +1,29 @@
+function s = score_func(r, c, gt, params)
 
-function s = score_func(r,c, gt, params)
-% gt = [20 40 50 60; 300 100 100 75; 10 300 80 110];
 img = zeros(r,c,'uint8');
-params = reshape(params,[16 4]);
-params;
-% params = randi(500,4);
-% params(:,[1 2]) = round(params(:,[1 2])/2);
-% params(:,[3 4]) = round(params(:,[3 4])/5);
-scores = zeros(1,5);
 
+params = reshape(params,[16 4]);
+
+scores = zeros(1,5);
 s = 0;
+
 % if ~any(params(:)<1)
-%weed out bboxes larger than
-%     for i = 1:size(params,1)
-%         current_box = params(i,:);
-%         if (current_box(1) + current_box(3)) > size(img,2)
-%             s = 1000;
-%             flag = false;
-%         end
-%         if (current_box(2) + current_box(4)) > size(img,1)
-%             s = 1000;
-%             flag = false;
-%         end
-%         if ((current_box(3)/current_box(4)) > 5) || ((current_box(3)/current_box(4)) < .2)
-%             s = 1000;
-%             flag = false;
-%         end
-%     end
+
 % color = jet(16);
 % I = insertShape(img,'rectangle',params(:,:),'color',color*255,'LineWidth',10);
 % imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
 
-%0 Make sure params boxes are inside image
-iou_score = bboxOverlapRatio([1 1 size(img,1) size(img,2)],params,'min');
+%% 1. Make sure params boxes are inside image
 
+iou_score = bboxOverlapRatio([1 1 r c],params,'min');
 ar_score = ones(1,size(params,1));
+
 for i=1:size(params,1)
     
     current_box = params(i,:);
     ar = min(current_box(3),current_box(4))/max(current_box(3),current_box(4));
-%     if ar > 1 %if aspect ratio is MORE than 1, use func 1 (y = 1/8(x) - 1/8)
-%         ar_score(i) =(1/8)*(ar) - (1/8);
-%     else %if aspect ratio is LESS than 1, use func 2 (y = -5/8(x) + 5/8)
-%         ar_score(i) = (-5/8)*(ar) + (5/8);
-%     end
     ar_score(i) = (-1/.99)*(ar) + (1/.99);
-    %% high score for ar more than 5, less than 0.2, width less than 100 and height less than 100
+    % high score for ar more than 5, less than 0.2, width less than 100 and height less than 100
 %     if ar > 5 || ar < 0.2 || 
     if current_box(3) < 100 || current_box(4) < 100
         ar_score(i) = 10;
@@ -57,7 +35,8 @@ iou_score = 1 - mean(iou_score);
 scores(1) = mean([iou_score avg_ar_score]);
 %calc area = area(polyshape(bbox2points(params(1,:))));
 %calc intersction area = rectint(params(1,:),params(3,:));
-%1 Minimize Proposed box Overlap : range [0 1]
+
+%% 2 Minimize Proposed box Overlap : range [0 1]
 % for i=1:size(params,1)
 %     img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))=img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))+1;
 % end
