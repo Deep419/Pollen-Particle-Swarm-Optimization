@@ -34,7 +34,14 @@ ar_score = ones(1,size(params,1));
 for i=1:size(params,1)    
     current_box = params(i,:);
     ar = min(current_box(3),current_box(4))/max(current_box(3),current_box(4));
-    ar_score(i) = (-1/.99)*(ar) + (1/.99);
+    % Linear Function
+    % ar_score(i) = (-1/.99)*(ar) + (1/.99);
+    
+    %Guassian Function 1
+%     ar_score(i) = 1.271988*exp(-((ar-(-0.1128002))^2)/(2*0.1626162^2));
+    
+    %Guassian Function 2
+    ar_score(i) = 1.235046*exp(-((ar-(-0.04674503))^2)/(2*0.07193964^2));
     % high score for ar more than 5, less than 0.2, width less than 100 and height less than 100
 %     if ar > 5 || ar < 0.2 || 
     if current_box(3) < 100 || current_box(4) < 100
@@ -78,5 +85,5 @@ scores(4) = 0;
 %% 5 Maximize Box Size : range [0 1]
 
 scores(5) = 0;
-s = (0.25 * scores(1)) + (.25 * scores(2)) + (.5* scores(3));
+s = (0.2 * scores(1)) + (.2 * scores(2)) + (.6* scores(3));
 end

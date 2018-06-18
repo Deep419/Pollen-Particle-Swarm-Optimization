@@ -1,16 +1,10 @@
-lb = 2;
-ub = 200;
-nvars = 1;
-options = optimoptions('particleswarm','Display', 'iter', ...
-    'SwarmSize',20, 'UseParallel', 0);
-
-params = ones(1,1)*2;
-
+parpool('local',32)
+s = zeros(1,299);
+opt = cell(1,299);
 tic
+for i = 2:300
+    [s(i-1), opt{1,i-1}] = pso_test(i);
+    fprintf('\nScore of %.4f with %d variables',s(i-1),i);
+end
 
-func = @(params) pso_test(params);
-
-% figure;
-opt_numBoxes = particleswarm(func, nvars, lb , ub, options);
-toc
-opt_numBoxes
+save('output.mat');
