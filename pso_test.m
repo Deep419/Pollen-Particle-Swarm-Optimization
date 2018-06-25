@@ -1,13 +1,13 @@
 % function [s,optParams] = pso_test(var)
 tic
-var = 200;
+var = 38;
 var = round(var);
 dummyData = 0;
 numBoxes = var;
 warning off
-gpuLimit = 1000;
+gpuLimit = 1200;
 masterPath = fullfile('D:','Deep','repos','master_scripts');
-% masterPath = fullfile('D:','research','pollen','repos','master_scripts');
+masterPath = fullfile('D:','research','pollen','repos','master_scripts');
 if isunix
     masterPath = '/users/dghaghar/research/data/pollen/master_scripts';
 end
@@ -28,14 +28,14 @@ lb = repelem(1,numBoxes * 4);
 ub = [repelem(c,numBoxes) repelem(r,numBoxes) repelem(gpuLimit,numBoxes*2)];
 nvars = numBoxes * 4;
 options = optimoptions('particleswarm','Display', 'iter', ...
-    'SwarmSize',640, 'UseParallel', 1);
+    'SwarmSize',4000, 'UseParallel', 1, 'InertiaRange', [0.01 0.5]);
 % 'OutputFcn',@myfun
 
 %Left Corner Initialization
 % params = [repelem(1,numBoxes*2) repelem(gpuLimit,numBoxes*2)];
 
 %Randi init
-rng(10)
+% rng(10)
 params = [randi(c,1,numBoxes) randi(r,1,numBoxes) randi(gpuLimit,1,numBoxes*2)];
 
 
@@ -48,9 +48,9 @@ optParams = particleswarm(func, nvars, lb , ub, options);
 toc
 optParams = reshape(optParams,[numBoxes 4]);
 s = score_func(r, c, gt,1, optParams)
-% color = jet(numBoxes);
-% I = insertShape(img,'rectangle',optParams,'color',color*255,'LineWidth',10);
-% figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
+color = jet(numBoxes);
+I = insertShape(img,'rectangle',optParams,'color',color*255,'LineWidth',10);
+figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',10));
 % end
 
 function stop = myfun(optimValues,state)
