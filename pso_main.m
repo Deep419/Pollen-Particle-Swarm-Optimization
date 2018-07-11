@@ -1,8 +1,8 @@
 %Version 1 : max(orig_box-10,3):orig_box+10 + Kmeans randinit with rand H W
 parpool('local',32)
 
-outputDir = fullfile(pwd,'output_first');
-mkdir(outputDir);
+% outputDir = fullfile(pwd,'output_first');
+% mkdir(outputDir);
 
 warning off
 
@@ -31,7 +31,7 @@ for i = 1:size(images,1)
     end
 end
 resultsTable = table(names,final);
-save('resultsTable1.mat','resultsTable');
+save('resultsTable.mat','resultsTable');
 
 function result = perform_pso(GT_data)
 

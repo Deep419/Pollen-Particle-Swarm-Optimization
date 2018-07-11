@@ -5,7 +5,7 @@
 #
 #PBS -N "parallel_swarm"
 #PBS -q copperhead
-#PBS -l walltime=400:00:00
+#PBS -l walltime=200:00:00
 #PBS -l nodes=1:ppn=32
 #PBS -l mem=32GB
 #PBS -V
@@ -17,5 +17,5 @@ cd $PBS_O_WORKDIR
 mkdir log
 {
 module load matlab/R2018a
-matlab -nodisplay -nosplash -nodesktop -r "main; exit;"
+matlab -nodisplay -nosplash -nodesktop -r "pso_main; exit;"
 } > log/output_"$PBS_JOBNAME"_$PBS_JOBID 2>log/errorLog_"$PBS_JOBNAME"_$PBS_JOBID
