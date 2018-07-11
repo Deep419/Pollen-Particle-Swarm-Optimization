@@ -2,16 +2,6 @@ function s = score_func(r, c, gt, verify, params)
 warning off
 numBoxes = numel(params) / 4;
 
-if 0
-    numBoxes = 4;
-    r = 500;
-    c = 500;
-    gt = [20 40 50 60; 300 100 100 75; 10 300 80 110];
-    gpuLimit = 200;
-    params = [repelem(1,numBoxes*2) repelem(gpuLimit,numBoxes*2)];
-    params = [repelem(1,numBoxes*2) repelem(gpuLimit,numBoxes*2)];
-end
-
 
 % img = zeros(r,c,'uint8');
 
