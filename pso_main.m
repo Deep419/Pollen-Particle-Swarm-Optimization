@@ -1,5 +1,5 @@
 %Version 1 : max(orig_box-10,3):orig_box+10 + Kmeans randinit with rand H W
-parpool('local',32)
+parpool('local',8)
 
 % outputDir = fullfile(pwd,'output_first');
 % mkdir(outputDir);
@@ -40,13 +40,18 @@ img = imread(imgPath);
 gt = GT_data.bbox{:};
 
 [r,c,~] = size(img);
-orig_box = ceil(r/1000) * ceil(c/1000);
 
 %% PSO Params
 gpuLimit = 1000;
 swarmSize = 2000;
 
+orig_box = ceil(r/1000) * ceil(c/1000);
 numBoxesRange = max(orig_box-10,3):orig_box+10;
+if orig_box > size(gt,1)
+    temp = round(size(gt,1)/20);
+    numBoxesRange = 10:temp:size(gt,1);
+end
+
 optimalBboxes = cell(numel(numBoxesRange),1);
 scores = cell(numel(numBoxesRange),1);
 
