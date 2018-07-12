@@ -1,7 +1,6 @@
 function s = score_func(r, c, gt, verify, params)
-warning off
-numBoxes = numel(params) / 4;
 
+numBoxes = numel(params) / 4;
 
 % img = zeros(r,c,'uint8');
 
@@ -16,7 +15,8 @@ s = 0;
 
 %% 1. Make sure params boxes are inside image
 
-inside_score = visionBboxIntersectByMin([1 1 r c],params);
+% inside_score = visionBboxIntersectByMin([1 1 r c],params);
+inside_score = bboxOverlapRatio([1 1 r c],params,'Min');
 
 inside_score = 1 - mean(inside_score);
 
@@ -51,7 +51,8 @@ scores(1) = (0.9 * inside_score) + (0.1 * avg_ar_score);
 %     img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))=img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))+1;
 % end
 
-param_overlap_iou = visionBboxIntersectByMin(params,params);
+% param_overlap_iou = visionBboxIntersectByMin(params,params);
+param_overlap_iou = bboxOverlapRatio(params,params,'Min');
 param_overlap_iou = triu(param_overlap_iou, 1);
 nelms = (size(param_overlap_iou, 1)-1:-1:1)';
 param_overlap_means = sum(param_overlap_iou(1:end-1,:), 2) ./ nelms;
@@ -60,7 +61,8 @@ scores(2) = mean(param_overlap_means);
 
 %% 3 Maximize GT Coverage : range [0 1]
 
-gt_param_iou = visionBboxIntersectByMin(gt,params);
+% gt_param_iou = visionBboxIntersectByMin(gt,params);
+gt_param_iou = bboxOverlapRatio(gt,params,'Min');
 max_row_wise = max(gt_param_iou,[],2);
 
 scores(3) = 1 - mean(max_row_wise);
@@ -83,7 +85,7 @@ scores(5) = 0;
 % s = (.1 * scores(1)) + (.5* scores(2)) + (.2* scores(3)) + (.3 * scores(4));
 s = (1 * scores(1)) + (10 * scores(2)) + (2 * scores(3)) + (10 * scores(4));
 if verify
-    s = [];
+    s = zeros(1,2);
     s(1) = numel(find(max_row_wise~=0))/size(gt,1);
     s(2) = mean(max_row_wise(find(max_row_wise~=0)));
 end
