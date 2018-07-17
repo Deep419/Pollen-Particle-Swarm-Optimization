@@ -4,7 +4,6 @@ delete(gcp('nocreate'))
 clus = parcluster('local');
 pool = parpool('local',clus.NumWorkers);
 
-
 warning off
 
 masterPath = fullfile('D:','Deep','repos','master_scripts');
@@ -19,19 +18,24 @@ load(fullfile(masterPath,'big_image','GT_data.mat'));
 images = dir(fullfile(masterPath,'big_image','*.tif'));
 final = cell(size(images,1),1);
 names = cell(size(images,1),1);
+id = cell(size(images,1),1);
+
 for i = 1:size(images,1)
     idx = find(strcmp(['big_image' filesep  images(i).name],GT_data.imageFilename));
     if ~isempty(idx)
         fprintf('\nImage #%d',i);
         names{i} = images(i).name;
+        id{i} = GT_data.id{i};
         tic
         final{i} = perform_pso(GT_data(idx,:));
         fprintf('- completed in %.f seconds',toc);
+        resultsTable = table(id,names,final);
+        save('resultsTable.mat','resultsTable');
     else
         warning('Image Not found.');
     end
 end
-resultsTable = table(names,final);
+resultsTable = table(id,names,final);
 save('resultsTable.mat','resultsTable');
 
 function result = perform_pso(GT_data)
@@ -46,12 +50,12 @@ gt = GT_data.bbox{:};
 gpuLimit = 1000;
 swarmSize = 2000;
 
-orig_box = ceil(r/1000) * ceil(c/1000);
-numBoxesRange = max(orig_box-10,3):orig_box+10;
-if orig_box > size(gt,1)
-    temp = round(size(gt,1)/20);
-    numBoxesRange = 10:temp:size(gt,1);
-end
+%orig_box = ceil(r/1000) * ceil(c/1000);
+%numBoxesRange = max(orig_box-10,3):orig_box+10;
+
+temp = round(size(gt,1)/20);
+numBoxesRange = 10:temp:size(gt,1)-1;
+
 
 optimalBboxes = cell(numel(numBoxesRange),1);
 scores = cell(numel(numBoxesRange),1);
@@ -62,8 +66,9 @@ for n = 1:numel(numBoxesRange)
     lb = repelem(1,numBoxes * 4);
     ub = [repelem(c,numBoxes) repelem(r,numBoxes) repelem(gpuLimit,numBoxes*2)];
     nvars = numBoxes * 4;
-    init_swarm = zeros(1000,numBoxes*4);
-       
+    init_swarm = zeros(2000,numBoxes*4);
+    rng(42)   
+
     % K-Means init
     pts(:,1) = gt(:,1)+(gt(:,3)/2);
     pts(:,2) = gt(:,2)+(gt(:,4)/2);
@@ -81,7 +86,7 @@ for n = 1:numel(numBoxesRange)
         randi_w = randi(gpuLimit,1,numBoxes);
         randi_h = randi(gpuLimit,1,numBoxes);
         init_swarm(i,:) = [abs((round(C(:,1)') - (randi_w/2))) abs((round(C(:,2)') - (randi_h/2))) randi_w randi_h];
-        %     init_swarm(i,:) = [round(C(:,1)') round(C(:,2)') ones(1,numBoxes*2)];
+        %init_swarm(i,:) = [round(C(:,1)') round(C(:,2)') ones(1,numBoxes*2)];
     end
     
     options = optimoptions('particleswarm','Display', 'off', ...
