@@ -1,8 +1,9 @@
-%Version 1 : max(orig_box-10,3):orig_box+10 + Kmeans randinit with rand H W
-parpool('local',8)
+%Version :
 
-% outputDir = fullfile(pwd,'output_first');
-% mkdir(outputDir);
+delete(gcp('nocreate'))
+clus = parcluster('local');
+pool = parpool('local',clus.NumWorkers);
+
 
 warning off
 
