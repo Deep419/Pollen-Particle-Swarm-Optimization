@@ -6,7 +6,7 @@
 #PBS -N "parallel_swarm"
 #PBS -q copperhead
 #PBS -l walltime=200:00:00
-#PBS -l nodes=1:ppn=8
+#PBS -l nodes=1:ppn=32
 #PBS -l mem=32GB
 #PBS -V
 #

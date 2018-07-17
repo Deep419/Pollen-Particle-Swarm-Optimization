@@ -1,7 +1,8 @@
 %Version 1 : max(orig_box-10,3):orig_box+10 + Kmeans randinit with rand H W
-delete(gcp('nocreate'))
-clus = parcluster('local');
-pool = parpool('local',clus.NumWorkers);
+parpool('local',8)
+
+% outputDir = fullfile(pwd,'output_first');
+% mkdir(outputDir);
 
 warning off
 
@@ -82,18 +83,18 @@ for n = 1:numel(numBoxesRange)
         %     init_swarm(i,:) = [round(C(:,1)') round(C(:,2)') ones(1,numBoxes*2)];
     end
     
-    options = optimoptions('particleswarm','Display', 'iter', ...
+    options = optimoptions('particleswarm','Display', 'off', ...
         'SwarmSize',swarmSize, 'UseParallel', 1,'InitialSwarmMatrix',init_swarm);
     % ,'OutputFcn',@myfun
     
     params = ones(1,numBoxes*4);
     
-    func = @(params) score_func_mex(r, c, gt, 0, params);
+    func = @(params) score_func(r, c, gt, 0, params);
     
     optParams = particleswarm(func, nvars, lb , ub, options);
     
 
-    s = score_func_mex(r, c, gt, 1, optParams);
+    s = score_func(r, c, gt,1, optParams);
     scores{n,1} = s;
     optimalBboxes{n,1} = reshape(optParams,[numBoxes 4]);
 
