@@ -1,8 +1,12 @@
-%Version :
-
-delete(gcp('nocreate'))
+function pso_main(index)
+fprintf('\n\nIndex %d\n\n',index);
+if index>133
+    error('Start exceeding 133')
+end
 clus = parcluster('local');
 pool = parpool('local',clus.NumWorkers);
+tic
+savefile_name = sprintf('result_%03d.mat',index);
 
 warning off
 
@@ -16,27 +20,31 @@ setGlobalPath(masterPath);
 load(fullfile(masterPath,'big_image','GT_data.mat'));
 
 images = dir(fullfile(masterPath,'big_image','*.tif'));
-final = cell(size(images,1),1);
-names = cell(size(images,1),1);
-id = cell(size(images,1),1);
+final = cell(1,1);
+names = cell(1,1);
+id = cell(1,1);
 
-for i = 1:size(images,1)
+for i = index
     idx = find(strcmp(['big_image' filesep  images(i).name],GT_data.imageFilename));
     if ~isempty(idx)
-        fprintf('\nImage #%d',i);
-        names{i} = images(i).name;
-        id{i} = GT_data.id{i};
-        tic
-        final{i} = perform_pso(GT_data(idx,:));
-        fprintf('- completed in %.f seconds',toc);
+        names{1} = images(i).name;
+        id{1} = GT_data.id{idx};
+        savefile_name = sprintf('result_%03d-id%s.mat',index,id{1});
+        fprintf('\nImage #%d : ID %s - %s\n',i,id{1},names{1});
+        image_tic = tic;
+        final{1} = perform_pso(GT_data(idx,:));
+        fprintf('\tCompleted Image #%d in %.f seconds\n',i,toc(image_tic));
         resultsTable = table(id,names,final);
-        save('resultsTable.mat','resultsTable');
+        save(savefile_name,'resultsTable');
     else
-        warning('Image Not found.');
+        fprintf('\nImage #%d (%s) not found\n',i,images(i).name);
     end
 end
 resultsTable = table(id,names,final);
-save('resultsTable.mat','resultsTable');
+fprintf('\n\nScript complete in %.f seconds. Saving results',toc);
+save(savefile_name,'resultsTable');
+end
+
 
 function result = perform_pso(GT_data)
 
@@ -53,22 +61,21 @@ swarmSize = 2000;
 %orig_box = ceil(r/1000) * ceil(c/1000);
 %numBoxesRange = max(orig_box-10,3):orig_box+10;
 
-temp = round(size(gt,1)/20);
-numBoxesRange = 10:temp:size(gt,1)-1;
-
-
+skip_idx = 20;
+numBoxesRange = 1:size(gt,1)/skip_idx:size(gt,1);
+numBoxesRange = round(numBoxesRange);
 optimalBboxes = cell(numel(numBoxesRange),1);
 scores = cell(numel(numBoxesRange),1);
 
 for n = 1:numel(numBoxesRange)
     numBoxes = numBoxesRange(n);
-    clear lb ub nvars init_swarm pts C i
+    clear lb ub nvars init_swarm pts C i randi_w randi_h options params func optParams s
     lb = repelem(1,numBoxes * 4);
     ub = [repelem(c,numBoxes) repelem(r,numBoxes) repelem(gpuLimit,numBoxes*2)];
     nvars = numBoxes * 4;
     init_swarm = zeros(2000,numBoxes*4);
-    rng(42)   
-
+    rng(42)
+    
     % K-Means init
     pts(:,1) = gt(:,1)+(gt(:,3)/2);
     pts(:,2) = gt(:,2)+(gt(:,4)/2);
@@ -96,20 +103,21 @@ for n = 1:numel(numBoxesRange)
     params = ones(1,numBoxes*4);
     
     func = @(params) score_func(r, c, gt, 0, params);
-    
+    fprintf('\t\t %d) %d numBoxes in progress',n,numBoxes);
+    pso_tic = tic;
     optParams = particleswarm(func, nvars, lb , ub, options);
+    fprintf('\b\b\b\b\b\b\b\b\b\b\bcompleted in %.f seconds\n',toc(pso_tic));
     
-
     s = score_func(r, c, gt,1, optParams);
     scores{n,1} = s;
     optimalBboxes{n,1} = reshape(optParams,[numBoxes 4]);
-
-%     color = winter(numBoxes*2)*255;     
-%     I = insertShape(img,'rectangle',optParams,'color',color(1:2:end,:),'LineWidth',10);
-%     figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',2));title(num2str(numBoxes));
+    
+    %     color = winter(numBoxes*2)*255;
+    %     I = insertShape(img,'rectangle',optParams,'color',color(1:2:end,:),'LineWidth',10);
+    %     figure;imshow(insertShape(I,'rectangle',gt,'color','green','LineWidth',2));title(num2str(numBoxes));
 end
 
-    result = table(numBoxesRange',scores,optimalBboxes);
+result = table(numBoxesRange',scores,optimalBboxes);
 
 end
 

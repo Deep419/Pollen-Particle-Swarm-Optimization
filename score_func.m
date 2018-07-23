@@ -29,10 +29,10 @@ for i=1:size(params,1)
     ar_score(i) = (-1/.99)*(ar) + (1/.99);
     
     %Guassian Function 1
-%     ar_score(i) = 1.271988*exp(-((ar-(-0.1128002))^2)/(2*0.1626162^2));
+    %     ar_score(i) = 1.271988*exp(-((ar-(-0.1128002))^2)/(2*0.1626162^2));
     
     %Guassian Function 2
-%     ar_score(i) = 1.235046*exp(-((ar-(-0.04674503))^2)/(2*0.07193964^2));
+    %     ar_score(i) = 1.235046*exp(-((ar-(-0.04674503))^2)/(2*0.07193964^2));
     % high score for ar more than 5, less than 0.2, width less than 100 and height less than 100
     %     if ar > 5 || ar < 0.2 ||
     if current_box(3) < 100 || current_box(4) < 100
@@ -50,14 +50,16 @@ scores(1) = (0.9 * inside_score) + (0.1 * avg_ar_score);
 % for i=1:size(params,1)
 %     img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))=img(params(i,1):params(i,1)+params(i,3),params(i,1):params(i,1)+params(i,3))+1;
 % end
-
-param_overlap_iou = visionBboxIntersectByMin(params,params);
-param_overlap_iou = triu(param_overlap_iou, 1);
-nelms = (size(param_overlap_iou, 1)-1:-1:1)';
-param_overlap_means = sum(param_overlap_iou(1:end-1,:), 2) ./ nelms;
-
-scores(2) = mean(param_overlap_means);
-
+if numBoxes ~= 1
+    param_overlap_iou = visionBboxIntersectByMin(params,params);
+    param_overlap_iou = triu(param_overlap_iou, 1);
+    nelms = (size(param_overlap_iou, 1)-1:-1:1)';
+    param_overlap_means = sum(param_overlap_iou(1:end-1,:), 2) ./ nelms;
+    
+    scores(2) = mean(param_overlap_means);
+else
+    scores(2) = 0;
+end
 %% 3 Maximize GT Coverage : range [0 1]
 
 gt_param_iou = visionBboxIntersectByMin(gt,params);
